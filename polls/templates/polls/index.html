@@ -1,0 +1,22 @@
+{% extends "polls/base.html" %}
+
+{% block content %}
+
+
+<h1> We've currently asked the following questions </h1>
+{% if latest_question_list %}
+        {% if messages %}
+          {% for message in messages %}
+            <p><strong>{{ message }}</strong></p>
+          {% endfor %}
+        {% endif %}
+    <ol style="font-size:25px;">
+    {% for question in latest_question_list %}
+        <li style='margin:15px 0;'><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
+    {% endfor %}
+    </ol>
+    {% else %}
+    <p>No polls are available.</p>
+{% endif %}
+<a href='{% url 'polls:add' %}'> Add a new questions </a>
+{% endblock %}

@@ -1,0 +1,9 @@
+body{
+  background-color: 	rgba(102, 255, 255,0.25)
+
+  
+}
+.container-fluid{
+  background-color: rgba(153, 255, 153,0.4) !important;
+  border: 2px solid rgba(153, 255, 153,1)
+}
