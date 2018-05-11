@@ -57,7 +57,10 @@ class CreateQuestionView(generic.CreateView):
 
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
-        formset = ChoiceFormSet(request.POST, request.FILES, instance=self.object)
+        formset = ChoiceFormSet(request.POST,
+                                request.FILES,
+                                instance=self.object
+                                )
         if formset.is_valid():
             formset.save()
             messages.success(request, 'Question added successfully.')

@@ -1,18 +1,35 @@
 {% extends "polls/base.html" %}
+{% load staticfiles %}
+
+{% block styles%}
+<link rel="stylesheet" type="text/css" href="{% static 'css/details.css' %}" />
+{% endblock %}
 
 {% block content %}
-  <h1>{{ question.question_text }}</h1>
-  By {{ question.creator }}<br/>
-  Created at {{ question.pub_date }}
+  <div class='detail'>
+    <div class='question_text'>
+      <h1>{{ question.question_text }}</h1>
+    </div>
 
-  {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
-  <form action="{% url 'polls:vote' question.id %}" method="post">
+<form action="{% url 'polls:vote' question.id %}" method="post">
   {% csrf_token %}
-  {% for choice in question.choice_set.all %}
-      <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}" />
-      <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}</label><br />
+  <div class='answer-list'>
+    {% for choice in question.choice_set.all %}
+      <label class='container' for="choice{{ forloop.counter }}">{{ choice.choice_text }}
+      <input type="radio" class='choice' name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}" />
+      <span class="checkmark"></span>
+      </label>
   {% endfor %}
+</div>
   <input type="submit" value="Vote" />
-  </form>
+</form>
+
+<div class='creator_details'>
+  <i>By {{ question.creator }}</i><br/>
+</div>
+<div class='date_added'>
+  Created at {{ question.pub_date }}
+</div>
 {% endblock content %}

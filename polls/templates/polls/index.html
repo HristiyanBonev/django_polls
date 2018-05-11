@@ -1,22 +1,42 @@
 {% extends "polls/base.html" %}
+{% load staticfiles%}
+
+{% block styles %}
+<script src='/static/js/index.js'> </script>
+{% endblock %}
 
 {% block content %}
-
-
-<h1> We've currently asked the following questions </h1>
+<h1> We currently have {{latest_question_list.count}} active questions</h1>
 {% if latest_question_list %}
         {% if messages %}
           {% for message in messages %}
             <p><strong>{{ message }}</strong></p>
           {% endfor %}
         {% endif %}
-    <ol style="font-size:25px;">
-    {% for question in latest_question_list %}
-        <li style='margin:15px 0;'><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
+      <div class='table-responsive'>
+      <table class='table table-dark'>
+        <thead>
+            <tr class='table-head'>
+                <th class='table-content' scope="col">#</th>
+                <th class='table-content' scope='col'>Question</th>
+                <th class='table-content' scope='col'>Date published</th>
+                <th class='table-content' scope='col'>Creator</th>
+            </tr>
+        </thead>
+        <tbody>
+          {% for question in latest_question_list %}
+        <tr class='table-row'>
+          <th scope='row'>{{ forloop.counter }}</th>
+          <td class='table-content question-text'><a class='col-xs-6' href='{% url 'polls:detail' question.id %}'>{{ question.question_text }}</a></td>
+          <td align='center' class='table-content'>{{ question.pub_date }}</td>
+          <td class='table-content'>{{ question.creator }}</td>
+        </tr>
+
     {% endfor %}
-    </ol>
+  </tbody>
+</table>
+  </div>
     {% else %}
     <p>No polls are available.</p>
 {% endif %}
-<a href='{% url 'polls:add' %}'> Add a new questions </a>
 {% endblock %}

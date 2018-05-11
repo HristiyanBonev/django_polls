@@ -1,18 +1,31 @@
 {% extends "polls/base.html" %}
+{% load staticfiles %}
+
+{% block styles%}
+<link rel="stylesheet" type="text/css" href="{% static 'css/add_page.css' %}" />
+<script src='/static/js/add_choices.js'> </script>
+{% endblock %}
+
 
 {% block content %}
 
+<div id='add-questions-instructions'>
 <h2> Here you can add an question</h2>
 <h4> Please note that you may add up to 5 answers for each question</h4>
-
+<h3>Type your question here</h3>
+</div>
 <form action='{% url "polls:add" %}' method="post">
   {% csrf_token %}
-  <h3>Type your question here</h3>
+
     {{form.as_p}}
+    <p id="empty_form" style="display:none;">
+      {{ formset.empty_form }}
+    </p>
     {{ formset.management_form }}
     {% for form in formset %}
       {{ form.as_p }}
     {% endfor %}
-    <input type="submit"  value="Add Question" />
+    <input type="submit" id='add_button' value="Submit question" />
+    <input type="button" onclick = 'cloneMore("choice_set")' id='add_button' value="Add choice" />
 </form>
 {% endblock content %}
