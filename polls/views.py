@@ -2,10 +2,18 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views import generic
-from .models import Choice, Question
-from .forms import ChoiceFormSet
+from .models import Choice, Question, MyUser
+from .forms import ChoiceFormSet, UserCreationForm
 from django.utils import timezone
 from django.contrib import messages
+from django.contrib.auth import login, authenticate
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode
+from django.template.loader import render_to_string
+from .tokens import account_activation_token
+from django.core.mail import EmailMessage
+from django.http import HttpResponse
 
 
 class IndexView(generic.ListView):
@@ -47,6 +55,11 @@ class CreateQuestionView(generic.CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if getattr(self, 'object', None):
+            fields = ('first_name',
+                      'last_name',
+                      'email_address',
+                      'gender',
+                      'password')
             formset = ChoiceFormSet(instance=self.object)
         else:
             formset = ChoiceFormSet()
@@ -88,3 +101,38 @@ def vote(request, question_id):
             reverse('polls:results',
                     kwargs={'pk': question.id})
         )
+
+
+class CreateAccountView(generic.CreateView):
+    model = MyUser
+    form_class = UserCreationForm
+    template_name = 'polls/sign_up.html'
+
+    def get_success_url(self):
+        if getattr(self, 'instance', None):
+            return reverse('polls:index')
+        return reverse('polls:create_account')
+
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            import pdb; pdb.set_trace()
+            user = MyUser.objects.create(**form.cleaned_data)
+            user.is_active = False
+            current_site = get_current_site(request)
+            mail_subject = 'Activate your account.'
+            message = render_to_string('polls/email/activation.html', {
+                'user': user.first_name,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': account_activation_token.make_token(user),
+            })
+            to_email = response.cleaned_data.get('email_address')
+            email = EmailMessage(
+                        mail_subject, message, to=[to_email]
+            )
+            email.send()
+            return HttpResponseRedirect(reverse('polls:index'))
+        else:
+            form = UserCreationForm()
+        return response

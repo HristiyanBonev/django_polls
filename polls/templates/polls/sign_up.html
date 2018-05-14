@@ -1,0 +1,21 @@
+{% extends "polls/base.html" %}
+{% load staticfiles%}
+
+{% block styles%}
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/sign_up.css' %}" />
+{% endblock %}
+
+{% block content %}
+{{ formset.errors }} {{ formset.non_field_errors }}
+{{ formset.non_form_errors }}
+<h1> You can create your account here </h1>
+<form action='{% url "polls:create_account" %}' method="POST">
+{% csrf_token %}
+
+{{form.as_p}}
+<br/><br/>
+    <input type="submit" id='add_button' value="Create account" />
+</form>
+
+{% endblock %}

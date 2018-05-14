@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 import datetime
+from django.contrib.auth.models import AbstractUser, UserManager
 
 
 class Question(models.Model):
@@ -30,3 +31,25 @@ class Choice(models.Model):
 
     def __str__(self):
         return self.choice_text
+
+
+class MyUser(AbstractUser):
+    '''
+    '''
+
+    GENDER_CHOICES = (
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('K', 'Кон')
+    )
+    gender = models.CharField(
+        max_length=6,
+        choices=GENDER_CHOICES,
+        default='M'
+    )
+    email_address = models.CharField(max_length=200, unique=True)
+
+    objects = UserManager()
+
+    def __str__(self):
+        return u'%s, %s' % (self.first_name, self.last_name)
