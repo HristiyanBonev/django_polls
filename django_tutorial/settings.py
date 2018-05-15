@@ -25,6 +25,8 @@ SECRET_KEY = '9o-u&3by)x*&&n^d5r$q(p%&q9an@%=p1t+i247_=#h9w3p!kh'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+LOGOUT_REDIRECT_URL = 'polls/index.html'
+
 ALLOWED_HOSTS = []
 
 TIME_ZONE = 'Europe/Sofia'

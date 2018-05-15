@@ -8,12 +8,12 @@
 
 {% block content %}
 <h1> You can create your account here </h1>
-<form action='{% url "polls:create_account" %}' method="POST">
+<form action='{% url "polls:sign_in" %}' method="POST">
 {% csrf_token %}
 
 {{form.as_p}}
 <br/><br/>
-    <input type="submit" id='add_button' value="Create account" />
+    <input type="submit" id='sign_in_button' value="Sign in" />
 </form>
 
 {% endblock %}

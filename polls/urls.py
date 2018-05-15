@@ -14,7 +14,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
+from django.conf.urls import url
 from . import views
+from django.conf import settings
+from django.contrib.auth.views import logout
 
 app_name = 'polls'
 
@@ -24,5 +27,9 @@ urlpatterns = [
     path('<int:pk>/results/', views.ResultsView.as_view(), name='results'),
     path('<int:question_id>/vote/', views.vote, name='vote'),
     path('add/', views.CreateQuestionView.as_view(), name='add'),
-    path('sign_up/', views.CreateAccountView.as_view(), name='create_account')
+    path('sign_up/', views.CreateAccountView.as_view(), name='create_account'),
+    path('sign_in/', views.SignInView.as_view(), name='sign_in'),
+    url(r'activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+        views.activate, name='activate'),
+    url(r'^logout/$', logout, {'next_page': '/polls'}, name='logout')
 ]

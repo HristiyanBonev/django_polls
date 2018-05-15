@@ -19,6 +19,10 @@
              <a class="navbar-brand" href="{% url 'polls:index'%}">Home</a></li>
              <a class="navbar-brand" href="{% url 'polls:add'%}">Add question</a></li>
              <a class="navbar-brand" href="{% url 'polls:create_account'%}">Create account</a></li>
+             <a class="navbar-brand" href="{% url 'polls:sign_in'%}">Sign in</a></li>
+             {% if request.user.is_authenticated %}
+              <a class="navbar-brand" href="{% url 'polls:logout'%}">Logout</a></li>
+             {% endif %}
            </div>
          </div>
 </header>
@@ -26,6 +30,9 @@
       {% endblock content %}
   </body>
   <footer>
+    {% if request.user.is_authenticated %}
+    Logged as <i>{{request.user.username}}</i>
+    {% endif %}
     <small id='signature'><b><i>Made by Hristiyan Bonev</i></b></small>
   </footer>
 </html>

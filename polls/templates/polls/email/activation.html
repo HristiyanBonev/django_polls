@@ -1,10 +1,10 @@
+{% autoescape on %}
 <html>
 <title> Email Activation </title>
 <body>
     <p> Dear {{ user }}</p>
     <p>Your account has successfully created. Please click below link to activate your account.</p>
-    <p><a href="{{ token }}"> Activate your account </a></p>
-    <p><a href="{{ uid }}"> Activate your account </a></p>
+    <p><a href="http://{{ domain }}{% url 'polls:activate' uidb64=uid token=token %}"> Activate your account </a></p>
 
 </body>
 
@@ -12,3 +12,4 @@
 <strong>The test group</strong>
 </footer>
 </html>
+{% endautoescape %}

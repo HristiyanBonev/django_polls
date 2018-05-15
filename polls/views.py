@@ -11,9 +11,11 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode
 from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_decode
 from .tokens import account_activation_token
 from django.core.mail import EmailMessage
 from django.http import HttpResponse
+from django.contrib.auth.views import LoginView
 
 
 class IndexView(generic.ListView):
@@ -103,36 +105,70 @@ def vote(request, question_id):
         )
 
 
+def activate(request, uidb64, token):
+    print(request)
+    try:
+        id = force_text(urlsafe_base64_decode(uidb64))
+        user = MyUser.objects.get(pk=id)
+    except(TypeError, ValueError, OverflowError, MyUser.DoesNotExist):
+        user = None
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user)
+        return render(request, 'polls/index.html', {
+            'successful_activation': 'Thank you for your email confirmation. Now you can login your account.'})
+    else:
+        return HttpResponse('Activation link is invalid!')
+
+
 class CreateAccountView(generic.CreateView):
     model = MyUser
     form_class = UserCreationForm
     template_name = 'polls/sign_up.html'
 
     def get_success_url(self):
-        if getattr(self, 'instance', None):
+        if getattr(self, 'object', None):
             return reverse('polls:index')
         return reverse('polls:create_account')
 
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
-        form = UserCreationForm(request.POST)
+        form = UserCreationForm(data=request.POST)
+        print(form.errors)
         if form.is_valid():
-            import pdb; pdb.set_trace()
-            user = MyUser.objects.create(**form.cleaned_data)
-            user.is_active = False
-            current_site = get_current_site(request)
-            mail_subject = 'Activate your account.'
-            message = render_to_string('polls/email/activation.html', {
-                'user': user.first_name,
-                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                'token': account_activation_token.make_token(user),
-            })
-            to_email = response.cleaned_data.get('email_address')
-            email = EmailMessage(
-                        mail_subject, message, to=[to_email]
-            )
-            email.send()
+            form.save()
+            form.cleaned_data['username'] = self.cleaned_data['username']
             return HttpResponseRedirect(reverse('polls:index'))
         else:
             form = UserCreationForm()
         return response
+
+
+class SignInView(LoginView):
+    template_name = 'polls/sign_in.html'
+
+    def get_success_url(self):
+        url = 'polls:index'
+        return reverse(url)
+
+    def post(self, request, *args, **kwargs):
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = MyUser.objects.get(username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                return render(request, 'polls/index.html')
+            else:
+                return render(request, 'polls/sign_in.html', {
+                    'error_message': 'It seems that your account is not activated. Please check your inbox'
+                })
+        else:
+            form = self.get_context_data()['form']
+            # form = ??????????????????????????????????????????????
+            return render(request, 'polls/sign_in.html', {
+                'error_message': 'Account is not in the database.',
+                'form': form
+            })
