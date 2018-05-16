@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
+from django.contrib.messages import constants as messages
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -32,6 +33,15 @@ ALLOWED_HOSTS = []
 TIME_ZONE = 'Europe/Sofia'
 
 # Application definition
+
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+
+MESSAGE_TAGS = {messages.DEBUG: 'debug',
+                messages.INFO: 'info',
+                messages.SUCCESS: 'success',
+                messages.WARNING: 'warning',
+                messages.ERROR: 'danger'
+                }
 
 INSTALLED_APPS = [
     'django_extensions',

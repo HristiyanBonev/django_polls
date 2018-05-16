@@ -3,19 +3,17 @@
 
 {% block styles %}
 <script src='/static/js/index.js'> </script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/index.css' %}" />
 {% endblock %}
 
 {% block content %}
 <h1> We currently have {{latest_question_list.count}} active questions</h1>
-{% if successful_activation %}
-  <div style='background-color:red; border:2px solid black; font-size:20px; font-weight:bold'> {{successful_activation}} </div>
-{% endif %}
+{% autoescape off %}
+{% for message in messages %}
+  <div class='alert alert-{{message.tags}}'> {{message}} </div>
+{% endfor %}
+{% endautoescape %}
 {% if latest_question_list %}
-        {% if messages %}
-          {% for message in messages %}
-            <p><strong>{{ message }}</strong></p>
-          {% endfor %}
-        {% endif %}
       <div class='table-responsive'>
       <table class='table table-dark'>
         <thead>

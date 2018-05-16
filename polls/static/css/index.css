@@ -1,0 +1,10 @@
+.alert {
+  min-height: 40px;
+  max-height: 600px;
+  font-size: 18px;
+  text-align: center;
+  font-weight: bold;
+  padding-top: 15px;
+  margin-bottom: 20px;
+  border-radius: 20px;
+}

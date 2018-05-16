@@ -10,10 +10,6 @@ from django.core.mail import EmailMessage
 
 class ChoiceForm(forms.ModelForm):
 
-    def __init__(self, *args, **kwargs):
-        super(ChoiceForm, self).__init__(*args, **kwargs)
-        self.fields['choice_text'].required = True
-
     class Meta:
         model = Choice
         fields = ('choice_text',)
@@ -24,12 +20,19 @@ class ChoiceForm(forms.ModelForm):
         return choice_text
 
 
+class QuestionForm(forms.ModelForm):
+
+    class Meta:
+        model = Question
+        fields = ('creator',)
+
+
 ChoiceFormSet = forms.inlineformset_factory(Question,
                                             Choice,
                                             form=ChoiceForm,
                                             can_delete=False,
                                             max_num=5,
-                                            extra=2
+                                            extra=2,
                                             )
 
 
@@ -38,6 +41,7 @@ class UserCreationForm(forms.ModelForm):
                                        widget=forms.PasswordInput())
     first_name = forms.CharField(max_length=255, required=True)
     last_name = forms.CharField(max_length=255, required=True)
+    username = forms.CharField(max_length=50, required=True, validators=[])
 
     field_order = ('username',
                    'password',
@@ -61,6 +65,12 @@ class UserCreationForm(forms.ModelForm):
             'confirm_password': forms.PasswordInput(),
             'email_address': forms.EmailInput()
         }
+        help_texts = {
+            'username': None
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(UserCreationForm, self).__init__(*args, **kwargs)
 
     def clean_email(self):
         email = self.cleaned_data.get('email_address')
@@ -96,6 +106,7 @@ class UserCreationForm(forms.ModelForm):
         )
         email.content_subtype = 'html'
         email.send()
+        print(object.is_active)
         return object
 
     def clean(self):

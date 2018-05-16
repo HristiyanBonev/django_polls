@@ -3,11 +3,16 @@
 
 {% block styles%}
 
-<link rel="stylesheet" type="text/css" href="{% static 'css/sign_up.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'css/sign_in.css' %}" />
 {% endblock %}
 
 {% block content %}
-<h1> You can create your account here </h1>
+<h1> Log In </h1>
+{% if error_message %}
+<div id='error_message' class="alert alert-danger">
+{{ error_message }}
+{% endif %}
+</div>
 <form action='{% url "polls:sign_in" %}' method="POST">
 {% csrf_token %}
 

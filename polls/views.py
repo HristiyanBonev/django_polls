@@ -6,17 +6,12 @@ from .models import Choice, Question, MyUser
 from .forms import ChoiceFormSet, UserCreationForm
 from django.utils import timezone
 from django.contrib import messages
-from django.contrib.auth import login, authenticate
-from django.contrib.sites.shortcuts import get_current_site
-from django.utils.encoding import force_bytes, force_text
-from django.utils.http import urlsafe_base64_encode
-from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_decode
 from .tokens import account_activation_token
-from django.core.mail import EmailMessage
 from django.http import HttpResponse
 from django.contrib.auth.views import LoginView
-
+from django.utils.encoding import force_text
+from django.contrib.auth import login
 
 class IndexView(generic.ListView):
     template_name = 'polls/index.html'
@@ -48,6 +43,8 @@ class CreateQuestionView(generic.CreateView):
     template_name = 'polls/add.html'
     fields = ('question_text', 'creator',)
 
+
+
     def get_success_url(self):
         if getattr(self, 'instance', None):
             return reverse('polls:detail',
@@ -70,13 +67,22 @@ class CreateQuestionView(generic.CreateView):
         })
         return context
 
+    # def get_form_kwargs(self):
+    #     kwargs = super().get_form_kwargs()
+    #     kwargs['creator'] = 'TestUser'
+    #     return kwargs
+
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         formset = ChoiceFormSet(request.POST,
                                 request.FILES,
                                 instance=self.object
                                 )
+        print(kwargs)
         if formset.is_valid():
+            if request.user.is_authenticated:
+                # formset.cleaned_data['creator'] = request.user.username
+                pass
             formset.save()
             messages.success(request, 'Question added successfully.')
             return HttpResponseRedirect(reverse('polls:index'))
@@ -129,20 +135,30 @@ class CreateAccountView(generic.CreateView):
 
     def get_success_url(self):
         if getattr(self, 'object', None):
-            return reverse('polls:index')
+            return HttpResponseRedirect(reverse('polls:index'))
         return reverse('polls:create_account')
 
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
+        # response = super().post(request, *args, **kwargs)
+        response = self.request.POST.__dict__
+        print(response)
         form = UserCreationForm(data=request.POST)
+        import pdb; pdb.set_trace()
         print(form.errors)
         if form.is_valid():
+            form.is_active = False
             form.save()
-            form.cleaned_data['username'] = self.cleaned_data['username']
+            messages.success(request, """Account created successfully!
+                             We've sent activation mail at your email address <br/>
+                             <u><b><a target='_blank' href=https://www.{}>Click here to check your mail</a></b></u>"""
+                             .format(form.cleaned_data['email_address']
+                                     .split('@')[1]))
             return HttpResponseRedirect(reverse('polls:index'))
         else:
             form = UserCreationForm()
         return response
+
+
 
 
 class SignInView(LoginView):
@@ -155,20 +171,21 @@ class SignInView(LoginView):
     def post(self, request, *args, **kwargs):
         username = request.POST.get('username')
         password = request.POST.get('password')
+        try:
+            user = MyUser.objects.get(username=username, password=password)
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    return render(request, 'polls/index.html')
+                else:
+                    return render(request, 'polls/sign_in.html', {
+                        'error_message': 'It seems that your account is not activated. Please check your inbox'
+                        })
 
-        user = MyUser.objects.get(username=username, password=password)
-        if user is not None:
-            if user.is_active:
-                login(request, user)
-                return render(request, 'polls/index.html')
-            else:
-                return render(request, 'polls/sign_in.html', {
-                    'error_message': 'It seems that your account is not activated. Please check your inbox'
-                })
-        else:
+        except MyUser.DoesNotExist:
             form = self.get_context_data()['form']
-            # form = ??????????????????????????????????????????????
+
             return render(request, 'polls/sign_in.html', {
                 'error_message': 'Account is not in the database.',
                 'form': form
-            })
+                })

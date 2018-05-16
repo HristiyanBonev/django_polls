@@ -13,9 +13,7 @@ input[type=text]:focus{
 outline: none
 }
 
-.errorlist{
-  display:inline
-}
+
 
 label{
   font-size: 20px;
@@ -24,7 +22,6 @@ label{
 p{
   display: inline;
 }
-
 
 input[type=submit],input[type=button] {
     background-color: #4CAF50; /* Green */
@@ -62,4 +59,16 @@ select{
   -moz-appearance: none;
   text-indent: 0.01px;
   text-overflow: ellipsis;
+}
+
+#error_message {
+  height: 30px !important;
+  font-size: 18px !important;
+  text-align: center !important;
+  font-weight: bold !important;
+  padding-top: 15px !important;
+}
+
+.errorlist{
+  display:none
 }
