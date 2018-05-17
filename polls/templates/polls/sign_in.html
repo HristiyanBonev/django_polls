@@ -8,10 +8,11 @@
 
 {% block content %}
 <h1> Log In </h1>
-{% if error_message %}
-<div id='error_message' class="alert alert-danger">
-{{ error_message }}
-{% endif %}
+{% autoescape off %}
+{% for message in messages %}
+  <div class='alert alert-{{message.tags}}'> {{message}} </div>
+{% endfor %}
+{% endautoescape %}
 </div>
 <form action='{% url "polls:sign_in" %}' method="POST">
 {% csrf_token %}

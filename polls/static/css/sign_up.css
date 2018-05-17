@@ -13,6 +13,18 @@ input[type=text]:focus{
 outline: none
 }
 
+.alert  {
+  min-height: 25px;
+  max-height: 600px;
+  font-size: 18px;
+  text-align: center;
+  font-weight: bold;
+  padding-top: 15px;
+  margin-bottom: 20px;
+  border-radius: 20px;
+}
+
+
 .errorlist{
   display:inline
 }
@@ -62,4 +74,8 @@ select{
   -moz-appearance: none;
   text-indent: 0.01px;
   text-overflow: ellipsis;
+}
+
+.errorlist{
+  display: none;
 }

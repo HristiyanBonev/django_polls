@@ -14,12 +14,33 @@ outline: none
 }
 
 
+select{
+  padding: 12px 40px 12px 20px;
+  font-size: 18px;
+  line-height: 18px;
+  width: 40%;
+  border: 2px solid black;
+  border-radius: 20px;
+  box-shadow: none;
+  background: transparent;
+  background-image: none;
+  -webkit-appearance: none;
+  outline: none;
+  display:block;
+  cursor: pointer;
+  -moz-appearance: none;
+  text-indent: 0.01px;
+  text-overflow: ellipsis;
+}
+
+
 label{
   font-size: 20px;
 }
 
 p{
-  display: inline;
+  display: block;
+  margin-top:1% !important;
 }
 
 input[type=submit],input[type=button] {

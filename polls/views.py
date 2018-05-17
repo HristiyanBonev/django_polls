@@ -12,6 +12,10 @@ from django.http import HttpResponse
 from django.contrib.auth.views import LoginView
 from django.utils.encoding import force_text
 from django.contrib.auth import login
+import urllib
+import json
+from django.conf import settings
+
 
 class IndexView(generic.ListView):
     template_name = 'polls/index.html'
@@ -20,7 +24,7 @@ class IndexView(generic.ListView):
     def get_queryset(self):
         """Return the last five published questions."""
         return Question.objects.filter(pub_date__lte=timezone.now()
-                                       ).order_by('-pub_date')
+                                       ).order_by('-pub_date')[:2]  # Change this!!!!
 
 
 class DetailView(generic.DetailView):
@@ -41,9 +45,7 @@ class AddQuestionView(generic.ListView):
 class CreateQuestionView(generic.CreateView):
     model = Question
     template_name = 'polls/add.html'
-    fields = ('question_text', 'creator',)
-
-
+    fields = ('question_text', 'creator')
 
     def get_success_url(self):
         if getattr(self, 'instance', None):
@@ -67,10 +69,9 @@ class CreateQuestionView(generic.CreateView):
         })
         return context
 
-    # def get_form_kwargs(self):
-    #     kwargs = super().get_form_kwargs()
-    #     kwargs['creator'] = 'TestUser'
-    #     return kwargs
+    def get_queryset(self):
+        return MyUser.objects.filter(username = request.user.username)
+
 
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
@@ -81,9 +82,8 @@ class CreateQuestionView(generic.CreateView):
         print(kwargs)
         if formset.is_valid():
             if request.user.is_authenticated:
-                # formset.cleaned_data['creator'] = request.user.username
-                pass
-            formset.save()
+                formset.save()
+
             messages.success(request, 'Question added successfully.')
             return HttpResponseRedirect(reverse('polls:index'))
         else:
@@ -121,9 +121,9 @@ def activate(request, uidb64, token):
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
         user.save()
-        login(request, user)
-        return render(request, 'polls/index.html', {
-            'successful_activation': 'Thank you for your email confirmation. Now you can login your account.'})
+        messages.success(request, """Account activated successfully!
+                         <a href='/polls/sign_in/' style='color:red'><b><u>Sign in</u></b></a> in order to submit questions.""")
+        return HttpResponseRedirect(reverse('polls:index'))
     else:
         return HttpResponse('Activation link is invalid!')
 
@@ -139,26 +139,33 @@ class CreateAccountView(generic.CreateView):
         return reverse('polls:create_account')
 
     def post(self, request, *args, **kwargs):
-        # response = super().post(request, *args, **kwargs)
-        response = self.request.POST.__dict__
-        print(response)
         form = UserCreationForm(data=request.POST)
-        import pdb; pdb.set_trace()
         print(form.errors)
         if form.is_valid():
-            form.is_active = False
-            form.save()
-            messages.success(request, """Account created successfully!
+            ''' Begin reCAPTCHA validation '''
+            recaptcha_response = request.POST.get('g-recaptcha-response')
+            url = 'https://www.google.com/recaptcha/api/siteverify'
+            values = {
+                'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
+                'response': recaptcha_response
+            }
+            data = urllib.parse.urlencode(values).encode()
+            req = urllib.request.Request(url, data=data)
+            response = urllib.request.urlopen(req)
+            result = json.loads(response.read().decode())
+            ''' End reCAPTCHA validation '''
+
+            if result['success']:
+                form.save()
+                messages.success(request, """Account created successfully!
                              We've sent activation mail at your email address <br/>
                              <u><b><a target='_blank' href=https://www.{}>Click here to check your mail</a></b></u>"""
                              .format(form.cleaned_data['email_address']
                                      .split('@')[1]))
-            return HttpResponseRedirect(reverse('polls:index'))
+                return HttpResponseRedirect(reverse('polls:index'))
         else:
             form = UserCreationForm()
-        return response
-
-
+        return super().post(request, *args, **kwargs)
 
 
 class SignInView(LoginView):
@@ -176,11 +183,11 @@ class SignInView(LoginView):
             if user is not None:
                 if user.is_active:
                     login(request, user)
-                    return render(request, 'polls/index.html')
+                    messages.success(request, 'Welcome back, {}!'.format(user.username.capitalize()))
+                    return HttpResponseRedirect(reverse('polls:index'))
                 else:
-                    return render(request, 'polls/sign_in.html', {
-                        'error_message': 'It seems that your account is not activated. Please check your inbox'
-                        })
+                    messages.error(request, 'Your account is not activated')
+                    return HttpResponseRedirect(reverse('polls:sign_in'))
 
         except MyUser.DoesNotExist:
             form = self.get_context_data()['form']

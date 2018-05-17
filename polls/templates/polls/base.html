@@ -19,7 +19,9 @@
       <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
            <div class="container-fluid-custom">
              <a class="navbar-brand" href="{% url 'polls:index'%}">Home</a></li>
+             {% if request.user.is_authenticated %}
              <a class="navbar-brand" href="{% url 'polls:add'%}">Add question</a></li>
+             {% endif %}
              <a class="navbar-brand" href="{% url 'polls:create_account'%}">Create account</a></li>
              {% if request.user.is_authenticated %}
               <a class="navbar-brand" href="{% url 'polls:logout'%}">Logout</a></li>
@@ -34,7 +36,8 @@
   </body>
   <footer>
     {% if request.user.is_authenticated %}
-    Logged as <i>{{request.user.username}}</i>
+    <br/>
+    <strong id='logged_as'>Logged as <i>{{request.user.username}}</i></strong>
     {% endif %}
     <small id='signature'><b><i>Made by Hristiyan Bonev</i></b></small>
   </footer>

@@ -24,7 +24,7 @@ class QuestionForm(forms.ModelForm):
 
     class Meta:
         model = Question
-        fields = ('creator',)
+        fields = ('question_text', 'creator')
 
 
 ChoiceFormSet = forms.inlineformset_factory(Question,
@@ -69,9 +69,6 @@ class UserCreationForm(forms.ModelForm):
             'username': None
         }
 
-    def __init__(self, *args, **kwargs):
-        super(UserCreationForm, self).__init__(*args, **kwargs)
-
     def clean_email(self):
         email = self.cleaned_data.get('email_address')
         try:
@@ -92,7 +89,6 @@ class UserCreationForm(forms.ModelForm):
         username = self.clean_username
         print(username)
         object = super().save()
-        object.is_active = False
         mail_subject = 'Activate your account.'
         message = render_to_string('polls/email/activation.html', {
             'domain': 'localhost:8000',

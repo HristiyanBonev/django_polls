@@ -23,7 +23,11 @@
       </label>
   {% endfor %}
 </div>
+{% if request.user.is_authenticated %}
   <input type="submit" value="Vote" />
+{% else %}
+<h3> Please <a href="/polls/sign_in"><u>login</u></a> or <a href="/polls/sign_up"><u>sign up</u></a> to vote. </h3>
+{% endif %}
 </form>
 
 <div class='creator_details'>

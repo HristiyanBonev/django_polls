@@ -21,7 +21,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '9o-u&3by)x*&&n^d5r$q(p%&q9an@%=p1t+i247_=#h9w3p!kh'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -147,5 +146,6 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'polls.app.today@gmail.com'
 EMAIL_HOST_PASSWORD = 'polls0314652600'
 EMAIL_PORT = 587
-
+SECRET_KEY = '9o-u&3by)x*&&n^d5r$q(p%&q9an@%=p1t+i247_=#h9w3p!kh'
+GOOGLE_RECAPTCHA_SECRET_KEY = '6Ldw3VkUAAAAAEqlVodLKKukhYHamoU4gKs10QXT'
 DEFAULT_FROM_EMAIL = 'Do not reply'

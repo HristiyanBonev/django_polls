@@ -4,38 +4,11 @@ import datetime
 from django.contrib.auth.models import AbstractUser, UserManager
 
 
-class Question(models.Model):
-    '''
-    '''
-    question_text = models.CharField(max_length=200)
-    pub_date = models.DateTimeField('Date Published', auto_now_add=True)
-    creator = models.CharField(max_length=150, null=True, blank=True)
-
-    def __str__(self):
-        return '{} \n - {}'.format(
-            self.question_text,
-            self.pub_date.strftime("%B %d, %Y - %H:%M:%S:%p")
-            )
-
-    def was_published_recently(self):
-        now = timezone.now()
-        return now - datetime.timedelta(days=1) <= self.pub_date <= now
-
-
-class Choice(models.Model):
-    '''
-    '''
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice_text = models.CharField(max_length=200)
-    votes = models.IntegerField(default=0)
-
-    def __str__(self):
-        return self.choice_text
-
-
 class MyUser(AbstractUser):
     '''
     '''
+    is_active = models.BooleanField(default=False,
+                                    verbose_name='account is activated')
 
     GENDER_CHOICES = (
         ('M', 'Male'),
@@ -52,4 +25,33 @@ class MyUser(AbstractUser):
     objects = UserManager()
 
     def __str__(self):
-        return u'%s, %s' % (self.first_name, self.last_name)
+        return self.username
+
+
+class Question(models.Model):
+    '''
+    '''
+    question_text = models.CharField(max_length=200)
+    pub_date = models.DateTimeField('Date Published', auto_now_add=True)
+    creator = models.ForeignKey(MyUser,
+                                null=True,
+                                related_name='created_by',
+                                on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.question_text
+
+    def was_published_recently(self):
+        now = timezone.now()
+        return now - datetime.timedelta(days=1) <= self.pub_date <= now
+
+
+class Choice(models.Model):
+    '''
+    '''
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    choice_text = models.CharField(max_length=200)
+    votes = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.choice_text
