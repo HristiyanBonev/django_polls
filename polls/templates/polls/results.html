@@ -1,16 +1,71 @@
 {% extends "polls/base.html" %}
 
+{% block styles %}
+<script src="https://code.highcharts.com/highcharts.src.js"></script>
+{% endblock styles %}
+
 {% block content %}
-  
-<h1>{{ question.question_text }}</h1>
 
-<ul>
-{% for choice in question.choice_set.all %}
-    <li>{{ choice.choice_text }} -- {{ choice.votes }} vote {{ choice.votes|pluralize }}</li>
-{% endfor %}
-</ul>
 
-<a href="{% url 'polls:detail' question.pk %}">Vote again?</a>
+<div id="container"></div>
+<script>
+var title = '{{question.question_text}}'
+
+function capitalize(string) {
+    myString = string
+    if (myString.slice(-1) != '?') {
+      myString += '?'
+    }
+    return myString.charAt(0).toUpperCase() + myString.slice(1);
+}
+Highcharts.chart('container', {
+  chart: {
+      plotBackgroundColor: null,
+      plotBorderWidth: null,
+      plotShadow: false,
+      type: 'pie'
+  },
+  title: {
+      text: '<b>Question</b><br/>' + capitalize(title)
+  },
+  tooltip: {
+      pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+  },
+  plotOptions: {
+      pie: {
+          allowPointSelect: true,
+          cursor: 'pointer',
+          dataLabels: {
+              enabled: true,
+              format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+              style: {
+                  color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+              }
+          }
+      }
+  },
+  series:
+  [
+    {
+      name: 'Brands',
+      colorByPoint: true,
+      data: [
+      {% for choice in choices %}
+        {
+          name: '{{choice.choice_text}}',
+          y: {{choice.votes}}
+        },
+      {% endfor %}
+      ]
+    }
+  ]
+});
+</script>
+
+
+
 <br/>
-<a href="{% url 'polls:index'%}">Back to questions</a>
+<a href="{% url 'polls:index'%}">
+    <button class="btn btn-outline-warning">Back to questions</button>
+</a>
 {% endblock content%}

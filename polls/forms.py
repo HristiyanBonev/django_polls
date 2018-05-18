@@ -1,11 +1,12 @@
 from django import forms
-from .models import Question, Choice, MyUser
-from django.contrib.auth import login, authenticate
+
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from django.template.loader import render_to_string
+
+from .models import Choice, MyUser, Question
 from .tokens import account_activation_token
-from django.core.mail import EmailMessage
 
 
 class ChoiceForm(forms.ModelForm):
@@ -24,7 +25,7 @@ class QuestionForm(forms.ModelForm):
 
     class Meta:
         model = Question
-        fields = ('question_text', 'creator')
+        fields = ('question_text',)
 
 
 ChoiceFormSet = forms.inlineformset_factory(Question,

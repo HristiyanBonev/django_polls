@@ -3,37 +3,38 @@
 
 {% block styles%}
 <link rel="stylesheet" type="text/css" href="{% static 'css/details.css' %}" />
+<script src="{% static 'js/vote.js' %}" ></script>
 {% endblock %}
 
 {% block content %}
+{% if error_message %}
+  <div class='alert alert-danger'>{{ error_message }}</div>
+{% endif %}
+<div class='detail_view_class'>
   <div class='detail'>
+    <h1>Asked question:</h1>
     <div class='question_text'>
-      <h1>{{ question.question_text }}</h1>
+      <h2>{{ question.question_text }}</h2>
     </div>
 
-{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
 <form action="{% url 'polls:vote' question.id %}" method="post">
   {% csrf_token %}
+  {% for choice in question.choice_set.all %}
   <div class='answer-list'>
-    {% for choice in question.choice_set.all %}
-      <label class='container' for="choice{{ forloop.counter }}">{{ choice.choice_text }}
-      <input type="radio" class='choice' name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}" />
-      <span class="checkmark"></span>
-      </label>
+      <input type="radio" name="choice" value="{{ choice.id }}" />
+    {{choice.choice_text}}
+  </div>
   {% endfor %}
-</div>
-{% if request.user.is_authenticated %}
-  <input type="submit" value="Vote" />
-{% else %}
-<h3> Please <a href="/polls/sign_in"><u>login</u></a> or <a href="/polls/sign_up"><u>sign up</u></a> to vote. </h3>
-{% endif %}
+  {% if request.user.is_authenticated %}
+    <input type="submit" id='btn_vote' class='btn btn-success' value="Vote" />
+  {% else %}
+    <h3> Please <a href="/polls/sign_in"><u>login</u></a> or <a href="/polls/sign_up"><u>sign up</u></a> to vote. </h3>
+  {% endif %}
 </form>
+</div>
 
 <div class='creator_details'>
-  <i>By {{ question.creator }}</i><br/>
-</div>
-<div class='date_added'>
-  Created at {{ question.pub_date }}
-</div>
+  <i>Created by <b>{{ question.creator }}</b></i> <br/>on <br/><b> {{ question.pub_date }}</b><br/>
+</div></div>
 {% endblock content %}

@@ -55,6 +55,9 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = 'polls.MyUser'
 
+MIDDLEWARE_CLASSES = [
+    'django.contrib.sessions.middleware.SessionMiddleware',
+]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

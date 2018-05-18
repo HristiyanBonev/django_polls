@@ -1,20 +1,23 @@
-from django.http import HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
-from django.urls import reverse
-from django.views import generic
-from .models import Choice, Question, MyUser
-from .forms import ChoiceFormSet, UserCreationForm
-from django.utils import timezone
-from django.contrib import messages
-from django.utils.http import urlsafe_base64_decode
-from .tokens import account_activation_token
-from django.http import HttpResponse
-from django.contrib.auth.views import LoginView
-from django.utils.encoding import force_text
-from django.contrib.auth import login
-import urllib
 import json
+import urllib
+
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.encoding import force_text
+from django.utils.http import urlsafe_base64_decode
+from django.views import generic
+
+from .forms import ChoiceFormSet, UserCreationForm
+from .models import Choice, MyUser, Question
+from .tokens import account_activation_token
 
 
 class IndexView(generic.ListView):
@@ -36,16 +39,21 @@ class ResultsView(generic.DetailView):
     model = Question
     template_name = 'polls/results.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # import ipdb; ipdb.set_trace()
+        question = Question.objects.get(pk=self.object.pk)
+        choices = Choice.objects.filter(question=question).values('choice_text', 'votes')
+        context.update({
+            'choices': [c for c in choices],
+        })
+        return context
 
-class AddQuestionView(generic.ListView):
+
+class CreateQuestionView(LoginRequiredMixin, generic.CreateView):
     model = Question
     template_name = 'polls/add.html'
-
-
-class CreateQuestionView(generic.CreateView):
-    model = Question
-    template_name = 'polls/add.html'
-    fields = ('question_text', 'creator')
+    fields = ('question_text',)
 
     def get_success_url(self):
         if getattr(self, 'instance', None):
@@ -54,6 +62,7 @@ class CreateQuestionView(generic.CreateView):
         return reverse('polls:index')
 
     def get_context_data(self, **kwargs):
+
         context = super().get_context_data(**kwargs)
         if getattr(self, 'object', None):
             fields = ('first_name',
@@ -69,11 +78,15 @@ class CreateQuestionView(generic.CreateView):
         })
         return context
 
-    def get_queryset(self):
-        return MyUser.objects.filter(username = request.user.username)
-
+    def form_valid(self, form):
+        # import ipdb; ipdb.set_trace()
+        response = super().form_valid(form)
+        self.object.creator = self.request.user
+        self.object.save()
+        return response
 
     def post(self, request, *args, **kwargs):
+        # import pdb; pdb.set_trace()
         response = super().post(request, *args, **kwargs)
         formset = ChoiceFormSet(request.POST,
                                 request.FILES,
@@ -90,7 +103,7 @@ class CreateQuestionView(generic.CreateView):
             formset = ChoiceFormSet(instance=self.object)
         return response
 
-
+@login_required
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     try:
@@ -99,7 +112,7 @@ def vote(request, question_id):
         # Raises a warning if exception
         return render(request, 'polls/detail.html', {
             'question': question,
-            'error_message': 'You didn\'t select a choice'
+            'error_message': 'Please select a choice'
         })
     else:
         # Else increments the votes for this question with 1
@@ -183,6 +196,7 @@ class SignInView(LoginView):
             if user is not None:
                 if user.is_active:
                     login(request, user)
+                    request.session['member_id'] = request.user.username
                     messages.success(request, 'Welcome back, {}!'.format(user.username.capitalize()))
                     return HttpResponseRedirect(reverse('polls:index'))
                 else:
